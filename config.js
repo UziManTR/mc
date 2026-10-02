@@ -1,0 +1,1 @@
+window.MCPVP_CONFIG={supabaseUrl:"",supabaseKey:""};
