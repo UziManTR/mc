@@ -7,7 +7,7 @@ const camera=new THREE.PerspectiveCamera(75,innerWidth/innerHeight,.05,120);came
 const renderer=new THREE.WebGLRenderer({canvas,antialias:false});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;
 scene.add(new THREE.HemisphereLight(0xc9e7ff,0x30402e,1.5));const sun=new THREE.DirectionalLight(0xffffff,2);sun.position.set(15,25,8);sun.castShadow=true;scene.add(sun);
 
-const clock=new THREE.Clock(), keys={}, blocks=[], remotes=new Map();let playing=false,dead=false,weapon='sword',hp=20,stamina=100,yaw=0,pitch=0,lastAttack=0,hitboxes=true,particles=true;
+const clock=new THREE.Clock(), keys={}, blocks=[], remotes=new Map(), hitboxHelpers=[];let playing=false,dead=false,weapon='sword',hp=20,stamina=100,yaw=0,pitch=0,lastAttack=0,hitboxes=true,particles=true;
 const player={pos:new THREE.Vector3(0,1.8,8),vel:new THREE.Vector3(),height:1.8,radius:.34,sprinting:false,blocking:false};
 const bot={pos:new THREE.Vector3(0,1,-10),vel:new THREE.Vector3(),hp:20,maxHp:20,attack:0,phase:0};
 const mats={grass:new THREE.MeshLambertMaterial({color:0x5f9b4b}),dirt:new THREE.MeshLambertMaterial({color:0x805936}),stone:new THREE.MeshLambertMaterial({color:0x7c8085}),wood:new THREE.MeshLambertMaterial({color:0x8a603a}),leaf:new THREE.MeshLambertMaterial({color:0x3c793c}),brick:new THREE.MeshLambertMaterial({color:0x9a5342})};
@@ -29,7 +29,7 @@ function distXZ(a,b){return Math.hypot(a.x-b.x,a.z-b.z)}
 
 function attack(){if(!playing||dead||performance.now()-lastAttack< (weapon==='mace'?650:weapon==='spear'?450:340))return;lastAttack=performance.now();const slot=document.querySelector('.slot.selected');slot.classList.remove('attack');void slot.offsetWidth;slot.classList.add('attack');
 const d=distXZ(player.pos,bot.pos);const facing=aimDir();const to=bot.pos.clone().sub(camera.position).normalize();const dot=facing.dot(to);
-if(d<weaponRange()&&dot>.55){let damage=weapon==='mace'?8:weapon==='spear'?5:4;if(weapon==='mace'&&player.pos.y>bot.pos.y+.5)damage=12;bot.hp-=damage;botMesh.rotation.y+=.2;spawnHit(bot.pos);document.querySelector('#status').textContent='HIT -'+damage;if(bot.hp<=0){bot.hp=20;bot.pos.set((Math.random()-.5)*26,1,(Math.random()-.5)*26);document.querySelector('#status').textContent='BOT RESPAWNED'}}}
+if(d<weaponRange()&&dot>.55){let damage=weapon==='mace'?8:weapon==='spear'?5:4;if(weapon==='mace'&&player.pos.y>bot.pos.y+.5)damage=12;bot.hp-=damage;botMesh.rotation.y+=.2;spawnHit(bot.pos);document.querySelector('#status').textContent='HIT -'+damage;if(channel)channel.send({type:'broadcast',event:'hit',payload:{id:myId,weapon,damage}});if(bot.hp<=0){bot.hp=20;bot.pos.set((Math.random()-.5)*26,1,(Math.random()-.5)*26);document.querySelector('#status').textContent='BOT RESPAWNED'}}}
 function weaponRange(){return weapon==='spear'?4.2:weapon==='mace'?3:3.2}
 function spawnHit(p){if(!particles)return;for(let i=0;i<10;i++){const q=new THREE.Mesh(new THREE.BoxGeometry(.08,.08,.08),new THREE.MeshBasicMaterial({color:0xffd34d}));q.position.copy(p);q.userData.v=new THREE.Vector3((Math.random()-.5)*4,Math.random()*4,(Math.random()-.5)*4);q.userData.t=0;scene.add(q);particlesList.push(q)}}
 const particlesList=[];
@@ -42,8 +42,9 @@ function updatePlayer(dt){const f=new THREE.Vector3(Math.sin(yaw),0,-Math.cos(ya
 player.sprinting=!!(keys.ShiftLeft||keys.ShiftRight)&&dir.lengthSq()>0&&stamina>1;const speed=(player.sprinting?6.8:4.2)*(window.pvpSpeed||1);if(player.sprinting)stamina=Math.max(0,stamina-dt*24);else stamina=Math.min(100,stamina+dt*16);player.vel.lerp(dir.multiplyScalar(speed),Math.min(1,dt*12));player.pos.addScaledVector(player.vel,dt);player.pos.x=Math.max(-16.5,Math.min(16.5,player.pos.x));player.pos.z=Math.max(-16.5,Math.min(16.5,player.pos.z));player.blocking=!!keys.MouseRight;updateCamera();localMesh.position.copy(player.pos);localMesh.position.y=0;
 if(hp<=0){dead=true;death.classList.remove('hidden');hud.classList.add('hidden');document.exitPointerLock?.()}}
 function updateUI(){document.querySelector('#stamina i').style.width=stamina+'%';document.querySelector('#targetHealth').style.width=(bot.hp/20*100)+'%';let h='';for(let i=0;i<10;i++)h+=i<Math.ceil(hp/2)?'♥':'<span class="heartEmpty">♥</span>';document.querySelector('#hearts').innerHTML=h;document.querySelector('#crossInfo').textContent='HITBOXES: '+(hitboxes?'ON':'OFF');document.querySelector('#online').textContent=hasSB?'ONLINE':'OFFLINE';document.querySelector('#online').classList.toggle('off',!hasSB)}
-function drawHitboxes(){document.querySelector('#hitboxLayer').innerHTML='';if(!hitboxes)return;for(const p of [botMesh,...[...remotes.values()].map(x=>x.mesh)]){const b=new THREE.Box3().setFromObject(p);const pts=[b.min,b.max];}}
-function loop(){requestAnimationFrame(loop);const dt=Math.min(.05,clock.getDelta());if(playing&&!dead){updatePlayer(dt);updateBot(dt);updateParticles(dt);updateUI();}renderer.render(scene,camera)}loop();
+function drawHitboxes(){for(const h of hitboxHelpers)scene.remove(h);hitboxHelpers.length=0;if(!hitboxes)return;for(const p of [botMesh,...[...remotes.values()].map(x=>x.mesh)]){const h=new THREE.BoxHelper(p,0xff3344);scene.add(h);hitboxHelpers.push(h)}}
+
+function loop(){requestAnimationFrame(loop);drawHitboxes();const dt=Math.min(.05,clock.getDelta());if(playing&&!dead){updatePlayer(dt);updateBot(dt);updateParticles(dt);updateUI();}renderer.render(scene,camera)}loop();
 
 addEventListener('keydown',e=>{keys[e.code]=true;if(e.code==='Digit1')selectWeapon('sword');if(e.code==='Digit2')selectWeapon('mace');if(e.code==='Digit3')selectWeapon('spear');if(e.code==='F3'){hitboxes=!hitboxes;document.querySelector('#showHitboxes').checked=hitboxes}if(e.code==='Escape'&&playing){document.exitPointerLock?.();}});
 addEventListener('keyup',e=>keys[e.code]=false);
@@ -57,7 +58,7 @@ document.querySelector('#respawn').onclick=()=>{hp=20;bot.hp=20;dead=false;playe
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
 
 let myId=Math.random().toString(36).slice(2),lastNet=0;
-async function startNet(){if(!sb)return;channel=sb.channel('mcpvp-duel',{config:{broadcast:{self:false},presence:{key:myId}}});channel.on('broadcast',{event:'state'},({payload})=>{if(payload.id===myId)return;let r=remotes.get(payload.id);if(!r){r={mesh:playerMesh(0xb0b8c0)};scene.add(r.mesh);remotes.set(payload.id,r)}r.mesh.position.lerp(new THREE.Vector3(payload.x,0,payload.z),.55);r.mesh.rotation.y=payload.yaw||0}).on('presence',{event:'leave'},({left})=>left.forEach(id=>{const r=remotes.get(id);if(r){scene.remove(r.mesh);remotes.delete(id)}})).subscribe(async s=>{if(s==='SUBSCRIBED')await channel.track({id:myId})})}
+async function startNet(){if(!sb)return;channel=sb.channel('mcpvp-duel',{config:{broadcast:{self:false},presence:{key:myId}}});channel.on('broadcast',{event:'hit'},({payload})=>{if(payload.id!==myId)return;hp=Math.max(0,hp-(payload.damage||1));flashDamage()}).on('broadcast',{event:'state'},({payload})=>{if(payload.id===myId)return;let r=remotes.get(payload.id);if(!r){r={mesh:playerMesh(0xb0b8c0)};scene.add(r.mesh);remotes.set(payload.id,r)}r.mesh.position.lerp(new THREE.Vector3(payload.x,0,payload.z),.55);r.mesh.rotation.y=payload.yaw||0;r.lastSeen=performance.now()}).on('presence',{event:'leave'},({left})=>left.forEach(id=>{const r=remotes.get(id);if(r){scene.remove(r.mesh);remotes.delete(id)}})).subscribe(async s=>{if(s==='SUBSCRIBED')await channel.track({id:myId})})}
 setInterval(()=>{if(channel&&playing&&!dead)channel.send({type:'broadcast',event:'state',payload:{id:myId,x:player.pos.x,z:player.pos.z,yaw}})},50);
 
 const commandBox=document.querySelector('#commandBox'),commandInput=document.querySelector('#commandInput'),commandLog=document.querySelector('#commandLog');
@@ -73,3 +74,5 @@ function logCmd(t){const d=document.createElement('div');d.textContent='> '+t;co
 addEventListener('keydown',e=>{if(e.key==='/'&&!commandBox.classList.contains('hidden'))return;if(e.key==='/'&&playing){e.preventDefault();commandBox.classList.remove('hidden');commandInput.value='';commandInput.focus()}else if(e.key==='Escape'&&!commandBox.classList.contains('hidden')){commandBox.classList.add('hidden');commandInput.blur()}});
 commandInput.addEventListener('keydown',e=>{if(e.key==='Enter'){command(commandInput.value);commandInput.value='';commandBox.classList.add('hidden');canvas.requestPointerLock?.()}if(e.key==='Escape'){commandBox.classList.add('hidden');commandInput.blur()}});
 window.pvpSpeed=1;
+
+setInterval(()=>{for(const [id,r] of remotes){if(r.lastSeen&&performance.now()-r.lastSeen>5000){scene.remove(r.mesh);remotes.delete(id)}}},1000);
