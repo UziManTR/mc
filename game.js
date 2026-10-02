@@ -51,8 +51,12 @@ addEventListener('keyup',e=>keys[e.code]=false);
 addEventListener('mousedown',e=>{if(!playing)return;if(e.button===0)attack();if(e.button===2)e.preventDefault()});addEventListener('mouseup',e=>{if(e.button===2)keys.MouseRight=false});addEventListener('contextmenu',e=>e.preventDefault());
 addEventListener('mousemove',e=>{if(document.pointerLockElement===canvas){yaw-=e.movementX*.0022;pitch-=e.movementY*.0022;pitch=Math.max(-1.45,Math.min(1.45,pitch))}});
 function selectWeapon(w){weapon=w;document.querySelectorAll('.slot').forEach(x=>x.classList.toggle('selected',x.dataset.weapon===w));document.querySelector('#status').textContent=w.toUpperCase()+' EQUIPPED'}
-document.querySelectorAll('.slot').forEach(x=>x.onclick=()=>selectWeapon(x.dataset.weapon));
-document.querySelector('#playBtn').onclick=()=>{menu.classList.add('hidden');hud.classList.remove('hidden');playing=true;canvas.requestPointerLock?.();document.querySelector('#status').textContent='FIGHT!';if(sb)startNet()};document.querySelector('#settingsBtn').onclick=()=>settings.classList.remove('hidden');document.querySelector('#closeSettings').onclick=()=>settings.classList.add('hidden');
+document.querySelectorAll('.slot').forEach(x=>{x.addEventListener('click',()=>selectWeapon(x.dataset.weapon));x.addEventListener('pointerdown',e=>{e.stopPropagation();selectWeapon(x.dataset.weapon)})});
+function startGame(){if(playing)return;menu.classList.add('hidden');settings.classList.add('hidden');hud.classList.remove('hidden');playing=true;dead=false;hp=20;bot.hp=20;document.querySelector('#status').textContent='FIGHT!';updateUI();try{canvas.requestPointerLock()}catch(e){}if(sb)startNet()}
+document.querySelector('#playBtn').addEventListener('click',startGame);
+document.querySelector('#playBtn').addEventListener('pointerup',startGame);
+document.querySelector('#settingsBtn').addEventListener('click',()=>settings.classList.remove('hidden'));
+document.querySelector('#closeSettings').addEventListener('click',()=>settings.classList.add('hidden'));
 document.querySelector('#showHitboxes').onchange=e=>hitboxes=e.target.checked;document.querySelector('#particles').onchange=e=>particles=e.target.checked;
 document.querySelector('#respawn').onclick=()=>{hp=20;bot.hp=20;dead=false;player.pos.set(0,1.8,8);death.classList.add('hidden');hud.classList.remove('hidden');playing=true;canvas.requestPointerLock?.()};
 addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
