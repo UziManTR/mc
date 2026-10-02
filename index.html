@@ -8,4 +8,18 @@
 <div id="hotbar"><div class="slot selected" data-weapon="sword"><b>1</b><span class="item sword"></span><small>SWORD</small></div><div class="slot" data-weapon="mace"><b>2</b><span class="item mace"></span><small>MACE</small></div><div class="slot" data-weapon="spear"><b>3</b><span class="item spear"></span><small>SPEAR</small></div></div><div id="hearts"></div><div id="stamina"><i></i></div><div id="crossInfo">HITBOXES: ON</div></div>
 <div id="commandBox" class="hidden"><span>/</span><input id="commandInput" autocomplete="off" spellcheck="false" placeholder="give sword | heal | speed 2 | hitboxes | weapon mace"><div id="commandLog"></div></div>
 <div id="death" class="screen hidden"><h1 id="deathTitle">YOU DIED</h1><p id="deathText">Respawning...</p><button id="respawn">RESPAWN</button></div>
-<script src="https://cdn.jsdelivr.net/npm/three@0.181.1/build/three.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config.js"></script><script src="game.js"></script></body></html>
+<script>
+(function(){
+  window.__loadScript=function(url,next){
+    const s=document.createElement('script');s.src=url;s.onload=next;s.onerror=function(){
+      if(url.includes('jsdelivr')) return window.__loadScript('https://unpkg.com/three@0.181.1/build/three.min.js',next);
+      document.body.innerHTML='<div style="font:16px monospace;color:white;background:#080a0d;position:fixed;inset:0;display:grid;place-items:center;text-align:center;padding:30px">THREE.JS YÜKLENEMEDİ<br><small>İnternet bağlantısını kontrol et ve Ctrl+Shift+R yap.</small></div>';
+    };document.head.appendChild(s);
+  };
+  window.__loadScript('https://cdn.jsdelivr.net/npm/three@0.181.1/build/three.min.js',function(){
+    const s=document.createElement('script');s.src='config.js';s.onload=function(){
+      const g=document.createElement('script');g.src='game.js';document.body.appendChild(g);
+    };document.body.appendChild(s);
+  });
+})();
+</script></body></html>
