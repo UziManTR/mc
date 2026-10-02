@@ -39,9 +39,9 @@ function updateBot(dt){if(bot.hp<=0)return;const to=player.pos.clone().sub(bot.p
 function flashDamage(){const f=document.querySelector('#damageFlash');f.style.opacity='.35';setTimeout(()=>f.style.opacity='0',100)}
 
 function updatePlayer(dt){const f=new THREE.Vector3(Math.sin(yaw),0,-Math.cos(yaw)),r=new THREE.Vector3(Math.cos(yaw),0,Math.sin(yaw)),dir=new THREE.Vector3();if(keys.KeyW)dir.add(f);if(keys.KeyS)dir.sub(f);if(keys.KeyD)dir.add(r);if(keys.KeyA)dir.sub(r);if(dir.lengthSq())dir.normalize();
-player.sprinting=!!(keys.ShiftLeft||keys.ShiftRight)&&dir.lengthSq()>0&&stamina>1;const speed=player.sprinting?6.8:4.2;if(player.sprinting)stamina=Math.max(0,stamina-dt*24);else stamina=Math.min(100,stamina+dt*16);player.vel.lerp(dir.multiplyScalar(speed),Math.min(1,dt*12));player.pos.addScaledVector(player.vel,dt);player.pos.x=Math.max(-16.5,Math.min(16.5,player.pos.x));player.pos.z=Math.max(-16.5,Math.min(16.5,player.pos.z));player.blocking=!!keys.MouseRight;updateCamera();localMesh.position.copy(player.pos);localMesh.position.y=0;
+player.sprinting=!!(keys.ShiftLeft||keys.ShiftRight)&&dir.lengthSq()>0&&stamina>1;const speed=(player.sprinting?6.8:4.2)*(window.pvpSpeed||1);if(player.sprinting)stamina=Math.max(0,stamina-dt*24);else stamina=Math.min(100,stamina+dt*16);player.vel.lerp(dir.multiplyScalar(speed),Math.min(1,dt*12));player.pos.addScaledVector(player.vel,dt);player.pos.x=Math.max(-16.5,Math.min(16.5,player.pos.x));player.pos.z=Math.max(-16.5,Math.min(16.5,player.pos.z));player.blocking=!!keys.MouseRight;updateCamera();localMesh.position.copy(player.pos);localMesh.position.y=0;
 if(hp<=0){dead=true;death.classList.remove('hidden');hud.classList.add('hidden');document.exitPointerLock?.()}}
-function updateUI(){document.querySelector('#targetHealth').style.width=(bot.hp/20*100)+'%';let h='';for(let i=0;i<10;i++)h+=i<Math.ceil(hp/2)?'♥':'<span class="heartEmpty">♥</span>';document.querySelector('#hearts').innerHTML=h;document.querySelector('#crossInfo').textContent='HITBOXES: '+(hitboxes?'ON':'OFF');document.querySelector('#online').textContent=hasSB?'ONLINE':'OFFLINE';document.querySelector('#online').classList.toggle('off',!hasSB)}
+function updateUI(){document.querySelector('#stamina i').style.width=stamina+'%';document.querySelector('#targetHealth').style.width=(bot.hp/20*100)+'%';let h='';for(let i=0;i<10;i++)h+=i<Math.ceil(hp/2)?'♥':'<span class="heartEmpty">♥</span>';document.querySelector('#hearts').innerHTML=h;document.querySelector('#crossInfo').textContent='HITBOXES: '+(hitboxes?'ON':'OFF');document.querySelector('#online').textContent=hasSB?'ONLINE':'OFFLINE';document.querySelector('#online').classList.toggle('off',!hasSB)}
 function drawHitboxes(){document.querySelector('#hitboxLayer').innerHTML='';if(!hitboxes)return;for(const p of [botMesh,...[...remotes.values()].map(x=>x.mesh)]){const b=new THREE.Box3().setFromObject(p);const pts=[b.min,b.max];}}
 function loop(){requestAnimationFrame(loop);const dt=Math.min(.05,clock.getDelta());if(playing&&!dead){updatePlayer(dt);updateBot(dt);updateParticles(dt);updateUI();}renderer.render(scene,camera)}loop();
 
@@ -59,3 +59,17 @@ addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updat
 let myId=Math.random().toString(36).slice(2),lastNet=0;
 async function startNet(){if(!sb)return;channel=sb.channel('mcpvp-duel',{config:{broadcast:{self:false},presence:{key:myId}}});channel.on('broadcast',{event:'state'},({payload})=>{if(payload.id===myId)return;let r=remotes.get(payload.id);if(!r){r={mesh:playerMesh(0xb0b8c0)};scene.add(r.mesh);remotes.set(payload.id,r)}r.mesh.position.lerp(new THREE.Vector3(payload.x,0,payload.z),.55);r.mesh.rotation.y=payload.yaw||0}).on('presence',{event:'leave'},({left})=>left.forEach(id=>{const r=remotes.get(id);if(r){scene.remove(r.mesh);remotes.delete(id)}})).subscribe(async s=>{if(s==='SUBSCRIBED')await channel.track({id:myId})})}
 setInterval(()=>{if(channel&&playing&&!dead)channel.send({type:'broadcast',event:'state',payload:{id:myId,x:player.pos.x,z:player.pos.z,yaw}})},50);
+
+const commandBox=document.querySelector('#commandBox'),commandInput=document.querySelector('#commandInput'),commandLog=document.querySelector('#commandLog');
+function command(msg){const a=msg.trim().toLowerCase().split(/\\s+/),c=a[0],v=a[1];if(!c)return;
+ if(c==='help'){logCmd('Commands: /give <sword|mace|spear>, /weapon <name>, /heal, /speed <0.5-3>, /hitboxes, /bot');}
+ else if(c==='give'||c==='weapon'){if(['sword','mace','spear'].includes(v))selectWeapon(v);else logCmd('Unknown weapon');}
+ else if(c==='heal'){hp=20;logCmd('Healed to 20 HP');}
+ else if(c==='speed'){const n=Math.max(.5,Math.min(3,Number(v)||1));window.pvpSpeed=n;logCmd('Speed multiplier '+n);}
+ else if(c==='hitboxes'){hitboxes=!hitboxes;document.querySelector('#showHitboxes').checked=hitboxes;logCmd('Hitboxes '+(hitboxes?'ON':'OFF'));}
+ else if(c==='bot'){bot.hp=20;bot.pos.set((Math.random()-.5)*24,1,(Math.random()-.5)*24);logCmd('Bot reset');}
+ else logCmd('Unknown command. Try /help');}
+function logCmd(t){const d=document.createElement('div');d.textContent='> '+t;commandLog.appendChild(d);while(commandLog.children.length>5)commandLog.firstChild.remove();}
+addEventListener('keydown',e=>{if(e.key==='/'&&!commandBox.classList.contains('hidden'))return;if(e.key==='/'&&playing){e.preventDefault();commandBox.classList.remove('hidden');commandInput.value='';commandInput.focus()}else if(e.key==='Escape'&&!commandBox.classList.contains('hidden')){commandBox.classList.add('hidden');commandInput.blur()}});
+commandInput.addEventListener('keydown',e=>{if(e.key==='Enter'){command(commandInput.value);commandInput.value='';commandBox.classList.add('hidden');canvas.requestPointerLock?.()}if(e.key==='Escape'){commandBox.classList.add('hidden');commandInput.blur()}});
+window.pvpSpeed=1;
