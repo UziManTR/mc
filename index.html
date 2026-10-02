@@ -2,7 +2,12 @@
 <html lang="tr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MC PvP</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet"><link rel="stylesheet" href="style.css"></head>
 <body><canvas id="game"></canvas><div id="crosshair">+</div><div id="hitboxLayer"></div><div id="damageFlash"></div>
-<div id="menu" class="screen"><div class="logo">MC<span>PVP</span></div><div class="sub">BROWSER COMBAT</div><button id="playBtn">PLAY</button><button id="settingsBtn">SETTINGS</button><div class="hint">WASD · SHIFT SPRINT · LMB ATTACK · RMB BLOCK · 1/2/3 WEAPONS · F3 HITBOXES · / COMMANDS</div></div>
+<div id="menu" class="screen"><div class="logo">MC<span>PVP</span></div><div class="sub">PVP ARENA</div><div id="menuWeapons">
+<button class="menuWeapon selected" data-weapon="sword"><span class="item sword"></span><b>SWORD</b><small>1</small></button>
+<button class="menuWeapon" data-weapon="mace"><span class="item mace"></span><b>MACE</b><small>2</small></button>
+<button class="menuWeapon" data-weapon="spear"><span class="item spear"></span><b>SPEAR</b><small>3</small></button>
+<button class="menuWeapon" data-weapon="wind"><span class="item wind"></span><b>WIND</b><small>4</small></button>
+</div><button id="playBtn">PLAY</button><button id="settingsBtn">SETTINGS</button><div class="hint">WASD · SHIFT SPRINT · LMB ATTACK · RMB BLOCK · 1/2/3/4 WEAPONS · F3 HITBOXES · / COMMANDS</div></div>
 <div id="settings" class="panel hidden"><h2>SETTINGS</h2><label>Render distance <input id="renderDist" type="range" min="3" max="10" value="6"></label><label><input id="showHitboxes" type="checkbox" checked> Show hitboxes</label><label><input id="particles" type="checkbox" checked> Combat particles</label><button id="closeSettings">BACK</button></div>
 <div id="hud" class="hidden"><div class="topbar"><div class="mode">DUEL <b id="online">OFFLINE</b></div><div id="ping">PING --</div></div><div id="targetBar"><span id="targetName">BOT</span><div><i id="targetHealth"></i></div></div><div id="status">READY</div>
 <div id="hotbar"><div class="slot selected" data-weapon="sword"><b>1</b><span class="item sword"></span><small>SWORD</small></div><div class="slot" data-weapon="mace"><b>2</b><span class="item mace"></span><small>MACE</small></div><div class="slot" data-weapon="spear"><b>3</b><span class="item spear"></span><small>SPEAR</small></div></div><div id="hearts"></div><div id="stamina"><i></i></div><div id="crossInfo">HITBOXES: ON</div></div>
