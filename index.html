@@ -12,11 +12,11 @@
 (function(){
   window.__loadScript=function(url,next){
     const s=document.createElement('script');s.src=url;s.onload=next;s.onerror=function(){
-      if(url.includes('jsdelivr')) return window.__loadScript('https://unpkg.com/three@0.181.1/build/three.min.js',next);
+      if(url.includes('jsdelivr')) return window.__loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.1/three.min.js',next);
       document.body.innerHTML='<div style="font:16px monospace;color:white;background:#080a0d;position:fixed;inset:0;display:grid;place-items:center;text-align:center;padding:30px">THREE.JS YÜKLENEMEDİ<br><small>İnternet bağlantısını kontrol et ve Ctrl+Shift+R yap.</small></div>';
     };document.head.appendChild(s);
   };
-  window.__loadScript('https://cdn.jsdelivr.net/npm/three@0.181.1/build/three.min.js',function(){
+  window.__loadScript('https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.1/three.min.js',function(){
     const s=document.createElement('script');s.src='config.js';s.onload=function(){
       const g=document.createElement('script');g.src='game.js';document.body.appendChild(g);
     };document.body.appendChild(s);
