@@ -1,61 +1,11 @@
 <!doctype html>
-<html lang="tr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MC PvP</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
-<canvas id="game"></canvas>
-<div id="crosshair">+</div>
-<div id="hitboxLayer"></div>
-<div id="damageFlash"></div>
-
-<div id="menu" class="screen">
-  <div class="logo">MC<span>PVP</span></div>
-  <div class="sub">BROWSER COMBAT</div>
-  <button id="playBtn">PLAY</button>
-  <button id="settingsBtn">SETTINGS</button>
-  <div class="hint">WASD MOVE · SHIFT SPRINT · LMB ATTACK · RMB BLOCK · 1 2 3 WEAPONS</div>
-</div>
-
-<div id="settings" class="panel hidden">
-  <h2>SETTINGS</h2>
-  <label>Render distance <input id="renderDist" type="range" min="3" max="10" value="6"></label>
-  <label><input id="showHitboxes" type="checkbox" checked> Show hitboxes</label>
-  <label><input id="particles" type="checkbox" checked> Combat particles</label>
-  <button id="closeSettings">BACK</button>
-</div>
-
-<div id="hud" class="hidden">
-  <div class="topbar">
-    <div class="mode">DUEL <b id="online">OFFLINE</b></div>
-    <div id="ping">PING --</div>
-  </div>
-  <div id="targetBar"><span id="targetName">PLAYER</span><div><i id="targetHealth"></i></div></div>
-  <div id="status">READY</div>
-  <div id="hotbar">
-    <div class="slot selected" data-weapon="sword"><b>1</b><span class="item sword"></span><small>SWORD</small></div>
-    <div class="slot" data-weapon="mace"><b>2</b><span class="item mace"></span><small>MACE</small></div>
-    <div class="slot" data-weapon="spear"><b>3</b><span class="item spear"></span><small>SPEAR</small></div>
-  </div>
-  <div id="hearts"></div>
-  <div id="crossInfo">HITBOXES: ON</div>
-</div>
-
-<div id="death" class="screen hidden">
-  <h1 id="deathTitle">YOU DIED</h1>
-  <p id="deathText">Respawning...</p>
-  <button id="respawn">RESPAWN</button>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/three@0.181.1/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js"></script>
-<script src="game.js"></script>
-</body>
-</html>
+<html lang="tr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MC PvP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet"><link rel="stylesheet" href="style.css"></head>
+<body><canvas id="game"></canvas><div id="crosshair">+</div><div id="hitboxLayer"></div><div id="damageFlash"></div>
+<div id="menu" class="screen"><div class="logo">MC<span>PVP</span></div><div class="sub">BROWSER COMBAT</div><button id="playBtn">PLAY</button><button id="settingsBtn">SETTINGS</button><div class="hint">WASD · SHIFT SPRINT · LMB ATTACK · RMB BLOCK · 1/2/3 WEAPONS · F3 HITBOXES · / COMMANDS</div></div>
+<div id="settings" class="panel hidden"><h2>SETTINGS</h2><label>Render distance <input id="renderDist" type="range" min="3" max="10" value="6"></label><label><input id="showHitboxes" type="checkbox" checked> Show hitboxes</label><label><input id="particles" type="checkbox" checked> Combat particles</label><button id="closeSettings">BACK</button></div>
+<div id="hud" class="hidden"><div class="topbar"><div class="mode">DUEL <b id="online">OFFLINE</b></div><div id="ping">PING --</div></div><div id="targetBar"><span id="targetName">BOT</span><div><i id="targetHealth"></i></div></div><div id="status">READY</div>
+<div id="hotbar"><div class="slot selected" data-weapon="sword"><b>1</b><span class="item sword"></span><small>SWORD</small></div><div class="slot" data-weapon="mace"><b>2</b><span class="item mace"></span><small>MACE</small></div><div class="slot" data-weapon="spear"><b>3</b><span class="item spear"></span><small>SPEAR</small></div></div><div id="hearts"></div><div id="stamina"><i></i></div><div id="crossInfo">HITBOXES: ON</div></div>
+<div id="commandBox" class="hidden"><span>/</span><input id="commandInput" autocomplete="off" spellcheck="false" placeholder="give sword | heal | speed 2 | hitboxes | weapon mace"><div id="commandLog"></div></div>
+<div id="death" class="screen hidden"><h1 id="deathTitle">YOU DIED</h1><p id="deathText">Respawning...</p><button id="respawn">RESPAWN</button></div>
+<script src="https://cdn.jsdelivr.net/npm/three@0.181.1/build/three.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config.js"></script><script src="game.js"></script></body></html>
